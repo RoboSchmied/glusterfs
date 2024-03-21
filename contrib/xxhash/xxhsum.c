@@ -539,11 +539,11 @@ static void BMK_hashStream(void* xxhHashValue, const algoType hashType, FILE* in
 }
 
 
-typedef enum { big_endian, little_endian} endianess;
+typedef enum { big_endian, little_endian} endianness;
 
 static int BMK_hash(const char* fileName,
                     const algoType hashType,
-                    const endianess displayEndianess)
+                    const endianness displayEndianness)
 {
     FILE*  inFile;
     size_t const blockSize = 64 KB;
@@ -606,7 +606,7 @@ static int BMK_hash(const char* fileName,
     case algo_xxh32:
         {   XXH32_canonical_t hcbe32;
             XXH32_canonicalFromHash(&hcbe32, h32);
-            displayEndianess==big_endian ?
+            displayEndianness==big_endian ?
                 BMK_display_BigEndian(&hcbe32, sizeof(hcbe32)) : BMK_display_LittleEndian(&hcbe32, sizeof(hcbe32));
             DISPLAYRESULT("  %s\n", fileName);
             break;
@@ -614,7 +614,7 @@ static int BMK_hash(const char* fileName,
     case algo_xxh64:
         {   XXH64_canonical_t hcbe64;
             XXH64_canonicalFromHash(&hcbe64, h64);
-            displayEndianess==big_endian ?
+            displayEndianness==big_endian ?
                 BMK_display_BigEndian(&hcbe64, sizeof(hcbe64)) : BMK_display_LittleEndian(&hcbe64, sizeof(hcbe64));
             DISPLAYRESULT("  %s\n", fileName);
             break;
@@ -628,16 +628,16 @@ static int BMK_hash(const char* fileName,
 
 
 static int BMK_hashFiles(const char** fnList, int fnTotal,
-                         algoType hashType, endianess displayEndianess)
+                         algoType hashType, endianness displayEndianness)
 {
     int fnNb;
     int result = 0;
 
     if (fnTotal==0)
-        return BMK_hash(stdinName, hashType, displayEndianess);
+        return BMK_hash(stdinName, hashType, displayEndianness);
 
     for (fnNb=0; fnNb<fnTotal; fnNb++)
-        result += BMK_hash(fnList[fnNb], hashType, displayEndianess);
+        result += BMK_hash(fnList[fnNb], hashType, displayEndianness);
     DISPLAY("\r%70s\r", "");
     return result;
 }
@@ -1013,7 +1013,7 @@ static void parseFile1(ParseFileArg* parseFileArg)
  *
  */
 static int checkFile(const char* inFileName,
-                     const endianess displayEndianess,
+                     const endianness displayEndianness,
                      U32 strictMode,
                      U32 statusOnly,
                      U32 warn,
@@ -1025,7 +1025,7 @@ static int checkFile(const char* inFileName,
     ParseFileArg* const parseFileArg = &parseFileArgBody;
     ParseFileReport* const report = &parseFileArg->report;
 
-    if (displayEndianess != big_endian) {
+    if (displayEndianness != big_endian) {
         /* Don't accept little endian */
         DISPLAY( "Check file mode doesn't support little endian\n" );
         return 0;
@@ -1093,7 +1093,7 @@ static int checkFile(const char* inFileName,
 
 
 static int checkFiles(const char** fnList, int fnTotal,
-                      const endianess displayEndianess,
+                      const endianness displayEndianness,
                       U32 strictMode,
                       U32 statusOnly,
                       U32 warn,
@@ -1104,11 +1104,11 @@ static int checkFiles(const char** fnList, int fnTotal,
     /* Special case for stdinName "-",
      * note: stdinName is not a string.  It's special pointer. */
     if (fnTotal==0) {
-        ok &= checkFile(stdinName, displayEndianess, strictMode, statusOnly, warn, quiet);
+        ok &= checkFile(stdinName, displayEndianness, strictMode, statusOnly, warn, quiet);
     } else {
         int fnNb;
         for (fnNb=0; fnNb<fnTotal; fnNb++)
-            ok &= checkFile(fnList[fnNb], displayEndianess, strictMode, statusOnly, warn, quiet);
+            ok &= checkFile(fnList[fnNb], displayEndianness, strictMode, statusOnly, warn, quiet);
     }
     return ok ? 0 : 1;
 }
@@ -1191,7 +1191,7 @@ int main(int argc, const char** argv)
     U32 specificTest  = 0;
     size_t keySize    = XXH_DEFAULT_SAMPLE_SIZE;
     algoType algo     = g_defaultAlgo;
-    endianess displayEndianess = big_endian;
+    endianness displayEndianness = big_endian;
 
     /* special case : xxh32sum default to 32 bits checksum */
     if (strstr(exename, "xxh32sum") != NULL) algo = algo_xxh32;
@@ -1201,7 +1201,7 @@ int main(int argc, const char** argv)
 
         if(!argument) continue;   /* Protection, if argument empty */
 
-        if (!strcmp(argument, "--little-endian")) { displayEndianess = little_endian; continue; }
+        if (!strcmp(argument, "--little-endian")) { displayEndianness = little_endian; continue; }
         if (!strcmp(argument, "--check")) { fileCheckMode = 1; continue; }
         if (!strcmp(argument, "--strict")) { strictMode = 1; continue; }
         if (!strcmp(argument, "--status")) { statusOnly = 1; continue; }
@@ -1292,9 +1292,9 @@ int main(int argc, const char** argv)
     if (filenamesStart==0) filenamesStart = argc;
     if (fileCheckMode) {
         return checkFiles(argv+filenamesStart, argc-filenamesStart,
-                          displayEndianess, strictMode, statusOnly, warn, quiet);
+                          displayEndianness, strictMode, statusOnly, warn, quiet);
     } else {
-        return BMK_hashFiles(argv+filenamesStart, argc-filenamesStart, algo, displayEndianess);
+        return BMK_hashFiles(argv+filenamesStart, argc-filenamesStart, algo, displayEndianness);
     }
 }
 
